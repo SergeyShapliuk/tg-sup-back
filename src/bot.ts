@@ -1,0 +1,137 @@
+import { Bot, Context, InputFile } from 'grammy';
+import * as fs from 'fs';
+import * as path from 'path';
+import { UserModel } from './users/domain/user.model';
+import { UserService } from './users/application/user.service';
+import { container } from './composition-root';
+
+
+// Create an instance of the `Bot` class and pass your bot token to it.
+// const bot = new Bot("7631811584:AAFETZnjBDKiaMeJ62C6GzWNg_RqfpVLXcE"); // <-- put your bot token between the ""
+export const bot = new Bot('7422068787:AAEs3fU1XR-IggFFK_d5Z7ON9ZMRa3wIFLU'); // <-- put your bot token between the ""
+
+// You can now register listeners on your bot object `bot`.
+// grammY will call the listeners when users send messages to your bot.
+
+// Handle the /start command.
+// bot.command("start", (ctx) =>{
+//     console.log('start',ctx)
+//     ctx.reply("Welcome! Up and running.")
+// } );
+// Handle other messages.
+const userService = container.get<UserService>(UserService);
+
+if (true) {
+  const createUserIfNotExists = async () => {
+    await userService.createUserAndInitTasks({
+      tg_id: String(6007991820),
+      tg_firstname: 'Andrew',
+      tg_lastname: 'Rogue',
+      tg_nick: 'roguedasdsadsd',
+      tg_language: 'en',
+    });
+  };
+  createUserIfNotExists();
+}
+// bot.on("message", (ctx) => ctx.reply("Got another message!"));
+async function ensureUserExists(ctx: Context) {
+  if (!ctx.from) return null;
+
+  try {
+    const result = await userService.createUserAndInitTasks({
+      tg_id: String(ctx.from.id),
+      tg_firstname: ctx.from.first_name ?? '',
+      tg_lastname: ctx.from.last_name ?? '',
+      tg_nick: ctx.from.username ?? '',
+      tg_language: ctx.from.language_code ?? 'en',
+    });
+
+    return result;
+  } catch (error) {
+    console.error('Error ensuring user exists:', error);
+    return null;
+  }
+}
+
+// Команда /start
+bot.command('start', async (ctx) => {
+  if (!ctx.from) {
+    await ctx.reply('Не удалось получить информацию о пользователе');
+    return;
+  }
+
+  try {
+    // Создаем/проверяем пользователя
+    const userResult = await ensureUserExists(ctx);
+
+    if (!userResult) {
+      await ctx.reply('❌ Ошибка при создании пользователя');
+      return;
+    }
+
+    // Отправляем приветственное сообщение с фото
+    const filePath = path.resolve(process.cwd(), 'public', 'assets', 'photo_2025-05-22_19-02-13.jpg');
+
+    const welcomeMessage = userResult.created
+      ? '🎉 Добро пожаловать! Ваш аккаунт создан.'
+      : '👋 С возвращением!';
+
+    await ctx.reply(welcomeMessage);
+
+    // Отправляем фото с описанием (если нужно)
+    if (fs.existsSync(filePath)) {
+      await ctx.replyWithPhoto(new InputFile(fs.createReadStream(filePath)), {
+        caption: `<b>Welcome to HotelHub</b>\n\n` +
+          `Your gateway to hotel discounts with HH tokens!\n\n` +
+          `💰 <b>Earn HH tokens</b> in our mini-games\n` +
+          `🏨 <b>Redeem for discounts</b> on Booking.com\n` +
+          `📱 <b>Play anytime</b> in Telegram\n\n` +
+          `Click the button below to start earning tokens!`,
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: '🚀 Start Earning Tokens',
+                web_app: { url: 'https://your-web-app-url.com' }
+              },
+            ],
+          ],
+        },
+      });
+    } else {
+      // Если фото нет, отправляем просто сообщение
+      await ctx.reply(`🚀 Начните зарабатывать HH токены!\n\nИспользуйте кнопку ниже:`, {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: '🎮 Open HotelHub Game',
+                web_app: { url: 'https://your-web-app-url.com' }
+              },
+            ],
+          ],
+        },
+      });
+    }
+
+  } catch (error) {
+    console.error('Error in start command:', error);
+    await ctx.reply('❌ Произошла ошибка. Пожалуйста, попробуйте снова.');
+  }
+});
+
+// async function botApi() {
+//     await bot.api.sendMessage(909630753, "Welcome to investmatch, we helps founders and investors find each other: for founders – automatic matching by industry, stage and funding amount; built-in chat with templates and secure doc exchange; dashboard of profile views, responses and improvement tips. For investors – filters by sector, stage and region; daily startup digests; scoring and metrics; instant pitch previews and KPI summaries; secure file sharing and real-time alerts. Trusted by 115+ founders, 35 angels and 2 accelerators. Worldwide reach.!");
+//     // await bot.command('start',{middleware})
+//     const me = await bot.api.getMe();
+//     console.log("botApi", me);
+// }
+
+// botApi();
+// Now that you specified how to handle messages, you can start your bot.
+// This will connect to the Telegram servers and wait for messages.
+
+// Start the bot.
+
+
