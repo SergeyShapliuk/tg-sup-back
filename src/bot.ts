@@ -21,7 +21,7 @@ export const bot = new Bot('7422068787:AAEs3fU1XR-IggFFK_d5Z7ON9ZMRa3wIFLU'); //
 // Handle other messages.
 const userService = container.get<UserService>(UserService);
 
-if (true) {
+if (false) {
   const createUserIfNotExists = async () => {
     await userService.createUserAndInitTasks({
       tg_id: String(6007991820),
