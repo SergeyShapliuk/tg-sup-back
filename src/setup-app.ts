@@ -29,7 +29,7 @@ export const setupApp = (app: Express) => {
   app.use(TESTING_PATH, testingRouter); // Подключаем тестовый роутер
 
   app.get('/', (req, res) => {
-    res.status(HttpStatus.Ok).send('Task 01 02 03 04 05 06');
+    res.status(HttpStatus.Ok).send('Support Active');
   });
 
   setupSwagger(app);

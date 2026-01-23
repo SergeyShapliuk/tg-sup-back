@@ -5,7 +5,6 @@ import {
   tgIdValidationBody,
 } from '../../core/middlewares/validation/params-id.validation-middleware';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validtion-result.middleware';
-import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.guard-middleware';
 import { UserSortField } from './input/user-sort-field';
 import { paginationAndSortingValidation } from '../../core/middlewares/validation/query-pagination-sorting.validation-middleware';
 import { userCreateInputValidation } from './user.input-dto.validation-middlewares';
