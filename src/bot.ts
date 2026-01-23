@@ -1,9 +1,10 @@
-import { Bot, Context, InputFile } from 'grammy';
+import { Bot, Context, InputFile, webhookCallback } from 'grammy';
 import * as fs from 'fs';
 import * as path from 'path';
 import { UserModel } from './users/domain/user.model';
 import { UserService } from './users/application/user.service';
 import { container } from './composition-root';
+import express from 'express';
 
 
 // Create an instance of the `Bot` class and pass your bot token to it.
@@ -133,5 +134,4 @@ bot.command('start', async (ctx) => {
 // This will connect to the Telegram servers and wait for messages.
 
 // Start the bot.
-
-
+export const handler = webhookCallback(bot, 'http');

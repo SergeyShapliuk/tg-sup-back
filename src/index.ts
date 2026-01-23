@@ -17,10 +17,9 @@ const initApp = async () => {
     setupApp(app);
 
     console.log('🔄 Connecting to database...');
-    await bot.start();
+    // await bot.start();
     await runDB(SETTINGS.MONGO_URL);
-    // await autoSeedForms();
-    // await autoSeedCurrencies();
+
     console.log('✅ Database connected');
 
     appInstance = app;
@@ -29,6 +28,12 @@ const initApp = async () => {
     // ✅ ВАЖНО: На Render используем порт из process.env.PORT
     const PORT = process.env.PORT || SETTINGS.PORT;
 
+    // Запускаем бота только в development
+    if (process.env.NODE_ENV === 'development') {
+      bot.start({
+        onStart: (info) => console.log(`✅ Bot @${info.username} started`),
+      });
+    }
     // ✅ Обязательно указываем '0.0.0.0' для Render
     if (process.env.NODE_ENV === 'production') {
       // Для Render: слушаем на 0.0.0.0
