@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Express } from 'express';
 import { setupApp } from './setup-app';
 import { SETTINGS } from './core/settings/settings';
 import { runDB } from './db/db';
@@ -6,14 +6,10 @@ import dotenv from 'dotenv';
 import lt from 'localtunnel';
 
 import { webhookCallback } from 'grammy';
-import { setWebhook } from './set-webhook';
 import { createBot } from './bot';
 
 
 dotenv.config();
-
-let isInitialized = false;
-let appInstance: express.Application;
 
 const token = process.env.NODE_ENV === 'development' ? process.env.TOKEN_BOT_DEV : process.env.TOKEN_BOT_PROD;
 if (!token) {
@@ -21,78 +17,81 @@ if (!token) {
 }
 export const bot = createBot(token);
 
+
+let isInitialized = false;
+let appInstance: express.Application;
+
+
 const initApp = async () => {
-  if (!isInitialized) {
-    const app = express();
-    setupApp(app);
+  if (isInitialized) return appInstance;
 
-    console.log('🔄 Connecting to database...');
-    // await bot.start();
-    await runDB(SETTINGS.MONGO_URL);
+  const app = express();
+  setupApp(app);
 
-    console.log('✅ Database connected');
+  console.log('🔄 Connecting to database...');
+  // await bot.start();
+  await runDB(SETTINGS.MONGO_URL);
 
-    appInstance = app;
-    isInitialized = true;
+  console.log('✅ Database connected');
 
-    // ✅ ВАЖНО: На Render используем порт из process.env.PORT
-    const PORT = process.env.PORT || SETTINGS.PORT;
-
-
-    // ✅ Обязательно указываем '0.0.0.0' для Render
-    if (process.env.NODE_ENV === 'production') {
-      // 1. Настраиваем webhook endpoint
-      app.post('/webhook', webhookCallback(bot, 'express'));
-
-      // 2. Health check для Vercel
-      app.get('/', (req, res) => {
-        res.json({
-          status: 'Bot is running',
-          mode: 'webhook',
-          timestamp: new Date().toISOString(),
-        });
-      });
-
-      // 3. Запускаем сервер
-      app.listen(Number(PORT), '0.0.0.0', () => {
-        console.log(`🚀 Production server listening on port ${PORT}`);
-
-        // 4. Устанавливаем webhook автоматически
-        setWebhook().catch(console.error);
-      });
-    } else if (process.env.NODE_ENV === 'development') {
-      // ✅ Сначала запускаем сервер
-      app.listen(Number(PORT), () => {
-        console.log(`🚀 Development server listening  on port ${process.env.TOKEN_BOT_DEV}`);
-
-        bot.start({
-          onStart: (info) => console.log(`✅ Bot @${info.username} started`),
-        });
-        // ✅ Потом запускаем тунель (после старта сервера)
-        // lt({ port: Number(PORT) }).then(tunnel => {
-        //     console.log(`🌐 External URL: ${tunnel.url}`);
-        // }).catch(error => {
-        //     console.log('Tunnel failed:', error.message);
-        // });
-      });
-      // try {
-      //     const tunnelUrl = await TunnelService.start(5001);
-      //     console.log(`🌐 External HTTPS URL: ${tunnelUrl}`);
-      // } catch (error) {
-      //     console.log('Ngrok not available, using localhost only');
-      // }
-      // Для локальной разработки: без указания host
-      // app.listen(Number(PORT), () => {
-      //     console.log(`🚀 Development server listening on port ${PORT}`);
-      // });
-    }
+  if (process.env.NODE_ENV === 'production') {
+    app.post('/webhook', webhookCallback(bot, 'express'));
   }
+
+  appInstance = app;
+  isInitialized = true;
 
   return appInstance;
 };
 
-// ✅ Экспортируем инициализированное приложение
-export default initApp();
 
-// ✅ Всегда запускаем приложение
-initApp().catch(console.error);
+/* ===========================
+   DEV — локальный запуск
+=========================== */
+if (process.env.NODE_ENV === 'development') {
+  initApp().then((app) => {
+    const PORT = SETTINGS.PORT || 3000;
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Dev server on http://localhost:${PORT}`);
+
+      bot.start({
+        onStart: (info) =>
+          console.log(`🤖 Bot @${info.username} started (polling)`),
+      });
+    });
+  });
+}
+
+/* ===========================
+   PROD — Vercel handler
+=========================== */
+
+export default async function handler(req: any, res: any) {
+  const app = await initApp();
+  return app(req, res);
+}
+// // ✅ Обязательно указываем '0.0.0.0' для Render
+// if (process.env.NODE_ENV === 'production') {
+//   // 1. Настраиваем webhook endpoint
+//   app.post('/webhook', webhookCallback(bot, 'express'));
+//
+//   // 2. Health check для Vercel
+//   app.get('/', (req, res) => {
+//     res.json({
+//       status: 'Bot is running',
+//       mode: 'webhook',
+//       timestamp: new Date().toISOString(),
+//     });
+//   });
+//
+//   // 3. Запускаем сервер
+//   app.listen(Number(PORT), '0.0.0.0', () => {
+//     console.log(`🚀 Production server listening on port ${PORT}`);
+//
+//     // 4. Устанавливаем webhook автоматически
+//     setWebhook().catch(console.error);
+//   });
+// }
+
+

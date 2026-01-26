@@ -1,32 +1,18 @@
-import { Bot, Context, InputFile, webhookCallback } from 'grammy';
+import { Bot, Context, InputFile } from 'grammy';
 import * as fs from 'fs';
 import * as path from 'path';
-import { UserModel } from './users/domain/user.model';
 import { UserService } from './users/application/user.service';
 import { container } from './composition-root';
-import express from 'express';
 
 
 export function createBot(token: string) {
 
-  // const token = process.env.TOKEN_BOT_DEV || 'dd';
-  console.log('token', token);
   if (!token) {
     throw new Error('❌ TOKEN_BOT_DEV не установлен в переменных окружения');
   }
-// Create an instance of the `Bot` class and pass your bot token to it.
-// export const bot = new Bot("7631811584:AAFETZnjBDKiaMeJ62C6GzWNg_RqfpVLXcE"); // <-- put your bot token between the ""
-  const bot = new Bot(token); // <-- put your test bot token between the ""
+  const bot = new Bot(token);
 
-// You can now register listeners on your bot object `bot`.
-// grammY will call the listeners when users send messages to your bot.
 
-// Handle the /start command.
-// bot.command("start", (ctx) =>{
-//     console.log('start',ctx)
-//     ctx.reply("Welcome! Up and running.")
-// } );
-// Handle other messages.
   const userService = container.get<UserService>(UserService);
 
   if (false) {
@@ -139,7 +125,4 @@ export function createBot(token: string) {
 //     console.log("botApi", me);
 // }
 
-// botApi();
-// Now that you specified how to handle messages, you can start your bot.
-// This will connect to the Telegram servers and wait for messages.
 
