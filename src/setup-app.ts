@@ -15,7 +15,7 @@ import { tasksRouter } from './tasks/routers/tasks.router';
 
 
 export const setupApp = (app: Express) => {
-  app.use(cookieParser());
+  // app.use(cookieParser());
   app.set('trust proxy', true);
 
   app.use(cors());

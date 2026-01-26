@@ -4,12 +4,22 @@ import { SETTINGS } from './core/settings/settings';
 import { runDB } from './db/db';
 import dotenv from 'dotenv';
 import lt from 'localtunnel';
-import { bot } from './bot';
+
+import { webhookCallback } from 'grammy';
+import { setWebhook } from './set-webhook';
+import { createBot } from './bot';
+
 
 dotenv.config();
 
 let isInitialized = false;
 let appInstance: express.Application;
+
+const token = process.env.TOKEN_BOT_DEV;
+if (!token) {
+  throw new Error('TOKEN_BOT_DEV не найден в .env файле');
+}
+export const bot = createBot(token);
 
 const initApp = async () => {
   if (!isInitialized) {
@@ -28,23 +38,36 @@ const initApp = async () => {
     // ✅ ВАЖНО: На Render используем порт из process.env.PORT
     const PORT = process.env.PORT || SETTINGS.PORT;
 
-    // Запускаем бота только в development
-    if (process.env.NODE_ENV === 'development') {
-      bot.start({
-        onStart: (info) => console.log(`✅ Bot @${info.username} started`),
-      });
-    }
+
     // ✅ Обязательно указываем '0.0.0.0' для Render
     if (process.env.NODE_ENV === 'production') {
-      // Для Render: слушаем на 0.0.0.0
+      // 1. Настраиваем webhook endpoint
+      app.post('/webhook', webhookCallback(bot, 'express'));
+
+      // 2. Health check для Vercel
+      app.get('/', (req, res) => {
+        res.json({
+          status: 'Bot is running',
+          mode: 'webhook',
+          timestamp: new Date().toISOString(),
+        });
+      });
+
+      // 3. Запускаем сервер
       app.listen(Number(PORT), '0.0.0.0', () => {
         console.log(`🚀 Production server listening on port ${PORT}`);
+
+        // 4. Устанавливаем webhook автоматически
+        setWebhook().catch(console.error);
       });
-    } else {
+    } else if (process.env.NODE_ENV === 'development') {
       // ✅ Сначала запускаем сервер
       app.listen(Number(PORT), () => {
-        console.log(`🚀 Development server listening on port ${PORT}`);
+        console.log(`🚀 Development server listening  on port ${process.env.TOKEN_BOT_DEV}`);
 
+        bot.start({
+          onStart: (info) => console.log(`✅ Bot @${info.username} started`),
+        });
         // ✅ Потом запускаем тунель (после старта сервера)
         // lt({ port: Number(PORT) }).then(tunnel => {
         //     console.log(`🌐 External URL: ${tunnel.url}`);
