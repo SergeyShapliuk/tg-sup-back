@@ -15,7 +15,7 @@ dotenv.config();
 let isInitialized = false;
 let appInstance: express.Application;
 
-const token = process.env.TOKEN_BOT_DEV;
+const token = process.env.NODE_ENV === 'development' ? process.env.TOKEN_BOT_DEV : process.env.TOKEN_BOT_PROD;
 if (!token) {
   throw new Error('TOKEN_BOT_DEV не найден в .env файле');
 }
