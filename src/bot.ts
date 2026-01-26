@@ -88,7 +88,7 @@ export function createBot(token: string) {
               [
                 {
                   text: '🚀 Start Earning Tokens',
-                  web_app: { url: 'https://your-web-app-url.com' },
+                  web_app: { url: 'https://tg-bot-support-delta.vercel.app/' },
                 },
               ],
             ],
@@ -102,7 +102,7 @@ export function createBot(token: string) {
               [
                 {
                   text: '🎮 Open Game',
-                  web_app: { url: 'https://your-web-app-url.com' },
+                  web_app: { url: 'https://tg-bot-support-delta.vercel.app/' },
                 },
               ],
             ],
