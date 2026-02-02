@@ -1,15 +1,21 @@
-import express, { Express } from 'express';
+import express from 'express';
 import { setupApp } from './setup-app';
 import { SETTINGS } from './core/settings/settings';
 import { runDB } from './db/db';
 import dotenv from 'dotenv';
-import lt from 'localtunnel';
+// import lt from 'localtunnel';
 
-import { webhookCallback } from 'grammy';
+// import { webhookCallback } from 'grammy';
 import { createBot } from './bot';
 
 
 dotenv.config();
+
+const getHost = (): string => {
+  const env = process.env.NODE_ENV || 'development';
+  return env === 'production' ? '0.0.0.0' : 'localhost';
+};
+
 
 const token = process.env.NODE_ENV === 'development' ? process.env.TOKEN_BOT_DEV : process.env.TOKEN_BOT_PROD;
 if (!token) {
@@ -34,9 +40,9 @@ const initApp = async () => {
 
   console.log('✅ Database connected');
 
-  if (process.env.NODE_ENV === 'production') {
-    app.post('/webhook', webhookCallback(bot, 'express'));
-  }
+  // if (process.env.NODE_ENV === 'production') {
+  //   app.post('/webhook', webhookCallback(bot, 'express'));
+  // }
 
   appInstance = app;
   isInitialized = true;
@@ -48,11 +54,12 @@ const initApp = async () => {
 /* ===========================
    DEV — локальный запуск
 =========================== */
-if (process.env.NODE_ENV === 'development') {
+// if (process.env.NODE_ENV === 'development') {
   initApp().then((app) => {
     const PORT = SETTINGS.PORT || 3000;
+    const HOST = getHost();
 
-    app.listen(PORT, () => {
+    app.listen(Number(PORT), HOST, () => {
       console.log(`🚀 Dev server on http://localhost:${PORT}`);
 
       bot.start({
@@ -61,7 +68,7 @@ if (process.env.NODE_ENV === 'development') {
       });
     });
   });
-}
+// }
 
 /* ===========================
    PROD — Vercel handler

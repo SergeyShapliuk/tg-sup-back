@@ -1,6 +1,6 @@
 import { Bot, Context, InputFile } from 'grammy';
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 import { UserService } from './users/application/user.service';
 import { container } from './composition-root';
 
@@ -15,18 +15,18 @@ export function createBot(token: string) {
 
   const userService = container.get<UserService>(UserService);
 
-  if (false) {
-    const createUserIfNotExists = async () => {
-      await userService.createUserAndInitTasks({
-        tg_id: String(6007991820),
-        tg_firstname: 'Andrew',
-        tg_lastname: 'Rogue',
-        tg_nick: 'roguedasdsadsd',
-        tg_language: 'en',
-      });
-    };
-    createUserIfNotExists();
-  }
+  // if (false) {
+  //   const createUserIfNotExists = async () => {
+  //     await userService.createUserAndInitTasks({
+  //       tg_id: String(6007991820),
+  //       tg_firstname: 'Andrew',
+  //       tg_lastname: 'Rogue',
+  //       tg_nick: 'roguedasdsadsd',
+  //       tg_language: 'en',
+  //     });
+  //   };
+  //   createUserIfNotExists();
+  // }
 
 // bot.on("message", (ctx) => ctx.reply("Got another message!"));
   async function ensureUserExists(ctx: Context) {
