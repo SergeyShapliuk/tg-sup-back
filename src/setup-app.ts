@@ -1,6 +1,6 @@
 import express, { Express } from 'express';
 import { HttpStatus } from './core/types/http-ststuses';
-import { setupSwagger } from './core/swagger/setup-swagger';
+// import { setupSwagger } from './core/swagger/setup-swagger';
 import {
    TASKS_PATH,
   TESTING_PATH, USERS_PATH,
@@ -32,7 +32,11 @@ export const setupApp = (app: Express) => {
     res.status(HttpStatus.Ok).send('Support Active');
   });
 
-  setupSwagger(app);
+  app.get('/healthz', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
+  });
+
+  // setupSwagger(app);
 
   return app;
 };
