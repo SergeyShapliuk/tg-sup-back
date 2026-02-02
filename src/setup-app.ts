@@ -9,7 +9,7 @@ import {
 
 import { testingRouter } from './testing/routers/testing.router';
 import { usersRouter } from './users/routers/users.router';
-import cookieParser from 'cookie-parser';
+// import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { tasksRouter } from './tasks/routers/tasks.router';
 
