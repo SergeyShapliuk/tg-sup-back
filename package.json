@@ -6,7 +6,8 @@
   "scripts": {
     "watch": "tsc -w",
     "dev": "nodemon --inspect dist/index.js",
-    "start": "node dist/index.js",
+    "build": "tsc",
+    "start": "yarn build && node dist/index.js",
     "tunnel": "npx ngrok http 5001",
     "dev-with-tunnel": "npm run dev & npm run tunnel",
     "jest": "jest -i",
